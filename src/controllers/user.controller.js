@@ -2,6 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { User } from "../model/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import { ApiError } from "../utils/ApiError.js";
 const registerUser = asyncHandler(async (req, res) => {
   // get user details from frontend
   // validation - not empty
@@ -24,7 +25,7 @@ const registerUser = asyncHandler(async (req, res) => {
   ) {
     throw new ApiError(400, "All fields are requiredS");
   }
-  const existedUser = User.findOne({ $or: [{ username }, { email }] });
+  const existedUser = await User.findOne({ $or: [{ username }, { email }] });
   if (existedUser) {
     throw new ApiError(409, "Username or email already exists");
   }
@@ -56,9 +57,9 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   // ApiResponse(201, "user created successfully registered");
-  return res.status(201).json(
-    ApiResponse(201, "user created successfully registered") 
-  )
+  return res
+    .status(201)
+    .json(ApiResponse(201, "user created successfully registered"));
 });
 
 export { registerUser };
