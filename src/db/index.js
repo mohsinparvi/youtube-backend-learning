@@ -5,7 +5,7 @@ const connectDB = async () => {
   console.log("MONGODB_UR", process.env.MONGODB_URI);
   try {
     const connectionInstance = await mongoose.connect(
-      `${process.env.MONGODB_URI}/backendlearning`
+      `${process.env.MONGODB_URI}/BACKENDLEARNING`
     );
     console.log(`\n connectionInstance: ${connectionInstance} \n`);
 

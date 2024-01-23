@@ -14,10 +14,10 @@ const registerUser = asyncHandler(async (req, res) => {
   // check for user creation
   // return res
 
-  res.status(200).json({
-    message: "ok",
-  });
-  console.log(req.body);
+  // res.status(200).json({
+  //   message: "ok",
+  // });
+  // console.log(req.body);
   const { fullName, email, username, password } = req.body;
   console.log("REQ>BODY", fullName, email, username, password);
   if (
@@ -59,7 +59,9 @@ const registerUser = asyncHandler(async (req, res) => {
   // ApiResponse(201, "user created successfully registered");
   return res
     .status(201)
-    .json(ApiResponse(201, "user created successfully registered"));
+    .json(
+      new ApiResponse(201, createduser, "user created successfully registered")
+    );
 });
 
 export { registerUser };
