@@ -3,6 +3,24 @@ import { User } from "../model/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
+
+const generateAccessAndRefereshTokens = async (userId) => {
+  try {
+    const user = await User.findById(userId);
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
+
+    user.refreshToken = refreshToken;
+    await user.save({ validateBeforeSave: false });
+
+    return { accessToken, refreshToken };
+  } catch (error) {
+    throw new ApiError(
+      500,
+      "Something went wrong while generating referesh and access token"
+    );
+  }
+};
 const registerUser = asyncHandler(async (req, res) => {
   // get user details from frontend
   // validation - not empty
@@ -14,7 +32,6 @@ const registerUser = asyncHandler(async (req, res) => {
   // check for user creation
   // return res
 
-  
   const { fullName, email, username, password } = req.body;
   console.log("REQ>BODY", fullName, email, username, password);
   if (
@@ -52,7 +69,7 @@ const registerUser = asyncHandler(async (req, res) => {
     password,
     email: email.toLowerCase(),
   });
-
+  console.log("user create:", user);
   // remove password and refresh token field from response
   const createduser = await User.findById(user._id).select(
     "-password -refreshToken"
@@ -69,5 +86,96 @@ const registerUser = asyncHandler(async (req, res) => {
       new ApiResponse(201, createduser, "user created successfully registered")
     );
 });
+const loginUser = asyncHandler(async (req, res) => {
+  // get data from req.body
+  // check fields are empty
+  // check the email and password fields are valid
+  // generate access token and refresh token
+  // send access token and refresh token in cookies
+  // console.log("req.body:", req.body);
+  const { email, username, password } = req.body;
+  // console.log("email value", email);
+  // console.log("username value", username);
+  // console.log("password value", password);
 
-export { registerUser };
+  if (!(username || email)) {
+    throw new ApiError(400, "Username or email is required");
+  }
+  const user = await User.findOne({
+    $or: [{ email }, { username }],
+  });
+  if (!user) {
+    throw new ApiError(404, "user does not exist");
+  }
+  const isPasswordValid = await user.isPasswordCorrect(password);
+  if (!isPasswordValid) {
+    throw new ApiError(401, "Invalid user credentials");
+  }
+  const { accessToken, refreshToken } = await generateAccessAndRefereshTokens(
+    user._id
+  );
+  console.log("accessToken:", accessToken);
+  console.log("refreshToken:", refreshToken);
+  const loggedInUser = await User.findById(user._id).select(
+    "-password -refreshToken"
+  );
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
+  // return res
+  //   .status(200)
+  //   .cookie("accessToken", accessToken, options)
+  //   .cookie("refreshToken", refreshToken, options)
+  //   .json(
+  //     new ApiResponse(
+  //       200,
+  //       {
+  //         user: loggedInUser,
+  //         accessToken,
+  //         refreshToken,
+  //       },
+  //       "User logged in successfully"
+  //     )
+  //   );
+  return res
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+      new ApiResponse(
+        200,
+        {
+          user: loggedInUser,
+          accessToken,
+          refreshToken,
+        },
+        "User logged In Successfully"
+      )
+    );
+});
+
+const logoutUser = asyncHandler(async (req, res) => {
+  User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $set: {
+        refreshToken: undefined,
+      },
+    },
+    {
+      new: true,
+    }
+  );
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
+  return res
+    .status(200)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
+    .json(200, {}, "User logged Out Successfully");
+});
+
+export { registerUser, loginUser, logoutUser };
