@@ -11,9 +11,7 @@ connectDB()
       console.log(
         `App is running at port http://localhost:${process.env.PORT}`
       );
-      // app.get("/api/v1/users/register", (req, res) => {
-      //   res.send("Hello, you visited localhost:8080!");
-      // });
+ 
     });
   })
   .catch((err) => {
