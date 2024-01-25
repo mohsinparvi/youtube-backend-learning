@@ -138,6 +138,7 @@ const loginUser = asyncHandler(async (req, res) => {
   //       "User logged in successfully"
   //     )
   //   );
+  console.log("accessToken:",accessToken)
   return res
     .status(200)
     .cookie("accessToken", accessToken, options)
