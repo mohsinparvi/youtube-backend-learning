@@ -208,6 +208,8 @@ const loginUser = asyncHandler(async (req, res) => {
   };
   console.log("accessToken: ", accessToken);
   console.log("refreshToken: ", refreshToken);
+  // const tokens = cookie("accessToken", accessToken, options);
+  // console.log("tokens", tokens);
   return res
     .status(200)
     .cookie("accessToken", accessToken, options)
@@ -217,12 +219,18 @@ const loginUser = asyncHandler(async (req, res) => {
         200,
         {
           user: loggedInUser,
-          accessToken,
-          refreshToken,
+          accessToken: accessToken,
+          refreshToken: refreshToken,
         },
         "User logged In Successfully"
       )
     );
+});
+
+const checkCookie = asyncHandler(async (req, res, next) => {
+  const accessToken = Math.random();
+  console.log(accessToken);
+  return res.status(200).cookie("access_token", accessToken);
 });
 const logoutUser = asyncHandler(async (req, res) => {
   User.findByIdAndUpdate(
@@ -247,4 +255,4 @@ const logoutUser = asyncHandler(async (req, res) => {
     .json(200, {}, "User logged Out Successfully");
 });
 
-export { registerUser, loginUser, logoutUser };
+export { registerUser, loginUser, logoutUser, checkCookie };

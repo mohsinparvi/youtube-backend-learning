@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  checkCookie,
   loginUser,
   logoutUser,
   registerUser,
@@ -21,7 +22,7 @@ router.route("/register").post(
   ]),
   registerUser
 );
-
+router.route("/cookie").post(checkCookie);
 router.route("/login").post(loginUser);
 //SECURED: routes
 router.route("/logout").post(verifyJWT, logoutUser);
