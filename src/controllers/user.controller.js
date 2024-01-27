@@ -273,8 +273,10 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
 });
 const updateUserCoverImage = asyncHandler(async (req, res) => {
   const coverImagelocalPath = req.file?.path;
+  console.log("coverImagelocalPath", coverImagelocalPath);
   if (!coverImagelocalPath) throw new ApiError(400, "cover Image is missing");
   const coverImage = await uploadOnCloudinary(coverImagelocalPath);
+  console.log("coverImage", coverImage);
   if (!coverImage.url)
     throw new ApiError(400, "Error while uploading on cover Image");
   const user = await User.findByIdAndUpdate(
